@@ -1,0 +1,19 @@
+# Optional: run the API with a LOCAL MongoDB instead of Atlas.
+# Usage: docker compose up --build   (needs server/.env for JWT_SECRET, Cloudinary, FRONTEND_URL)
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+  api:
+    build: ./server
+    env_file: ./server/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/civictrack
+      NODE_ENV: development
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+volumes:
+  mongo-data:
