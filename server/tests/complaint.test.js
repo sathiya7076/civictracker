@@ -6,6 +6,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // Never call the real Cloudinary in tests.
 vi.mock('../src/services/uploadService.js', () => ({
+  deleteImagesByUrl: vi.fn(async () => {}),
   uploadImages: vi.fn(async (files = []) => files.map((_, i) => `https://res.cloudinary.test/image-${i}.png`)),
 }));
 

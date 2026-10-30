@@ -8,6 +8,7 @@ import ImagePreview from '../../components/ImagePreview.jsx';
 import Spinner from '../../components/Spinner.jsx';
 import Timeline from '../../components/Timeline.jsx';
 import { useComplaint } from '../../hooks/useComplaint.js';
+import { compressAll } from '../../utils/compressImage.js';
 import { IMAGE_TYPES, MAX_IMAGES } from '../../utils/constants.js';
 import { getErrorMessage } from '../../utils/getErrorMessage.js';
 import { mergeImageFiles } from '../../utils/imageFiles.js';
@@ -42,12 +43,13 @@ export default function StaffComplaintDetails() {
 
   const changeStatus = (status, success) => run(() => staffUpdateStatusRequest(id, { status, note }), success);
 
-  const uploadEvidence = () => {
-    const data = new FormData();
-    files.forEach((f) => data.append('images', f));
-    if (note.trim()) data.append('note', note.trim());
-    return run(() => staffUploadEvidenceRequest(id, data), 'Evidence uploaded.');
-  };
+  const uploadEvidence = () =>
+    run(async () => {
+      const data = new FormData();
+      (await compressAll(files)).forEach((f) => data.append('images', f));
+      if (note.trim()) data.append('note', note.trim());
+      return staffUploadEvidenceRequest(id, data);
+    }, 'Evidence uploaded.');
 
   const handleFiles = (e) => {
     const result = mergeImageFiles(files, Array.from(e.target.files));

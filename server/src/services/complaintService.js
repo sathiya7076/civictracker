@@ -3,7 +3,7 @@ import ComplaintUpdate from '../models/ComplaintUpdate.js';
 import ApiError from '../utils/ApiError.js';
 import { generateComplaintId } from '../utils/complaintId.js';
 import { ROLES } from '../utils/constants.js';
-import { uploadImages } from './uploadService.js';
+import { deleteImagesByUrl, uploadImages } from './uploadService.js';
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -18,6 +18,7 @@ export async function createComplaint({ user, data, files }) {
     } catch (err) {
       // Extremely unlikely collision on the random suffix: retry with a new reference.
       if (err.code === 11000 && err.keyPattern?.complaintId && attempt < 2) continue;
+      await deleteImagesByUrl(images); // do not leave uploaded photos orphaned when saving fails
       throw err;
     }
   }

@@ -1,5 +1,6 @@
 // Turns an Axios error into a message that is safe and useful to show to the user.
 export function getErrorMessage(err) {
+  if (err?.response?.status === 413) return 'The photos are too large to upload. Try fewer or smaller photos.';
   if (err?.response?.data?.errors?.length) {
     return err.response.data.errors.map((e) => e.message).join(' ');
   }

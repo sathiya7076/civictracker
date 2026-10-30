@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 vi.mock('../src/services/uploadService.js', () => ({
+  deleteImagesByUrl: vi.fn(async () => {}),
   uploadImages: vi.fn(async (files = []) => files.map((_, i) => `https://res.cloudinary.test/evidence-${i}.png`)),
 }));
 

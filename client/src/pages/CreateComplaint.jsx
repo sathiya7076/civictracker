@@ -4,6 +4,7 @@ import { createComplaintRequest } from '../api/complaints.js';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import FormField from '../components/FormField.jsx';
 import ImagePreview from '../components/ImagePreview.jsx';
+import { compressAll } from '../utils/compressImage.js';
 import { CATEGORIES, IMAGE_TYPES, MAX_IMAGES, MAX_IMAGE_BYTES } from '../utils/constants.js';
 import { getErrorMessage } from '../utils/getErrorMessage.js';
 
@@ -76,10 +77,11 @@ export default function CreateComplaint() {
     Object.entries(form).forEach(([key, value]) => {
       if (String(value).trim() !== '') data.append(key, String(value).trim());
     });
-    files.forEach((f) => data.append('images', f));
 
     setSubmitting(true);
     try {
+      const photos = await compressAll(files);
+      photos.forEach((f) => data.append('images', f));
       const res = await createComplaintRequest(data);
       navigate(`/complaints/${res.data.data.complaint._id}`, { replace: true, state: { created: true } });
     } catch (err) {
