@@ -14,9 +14,20 @@ import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
-app.set('trust proxy', 1); // correct client IPs for rate limiting behind Render/Railway/etc.
+// FRONTEND_URL can hold several origins separated by commas.
+const allowedOrigins = String(env.FRONTEND_URL || '')
+  .split(',')
+  .map((o) => o.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
+app.set('trust proxy', 1); // correct client IPs for rate limiting behind Vercel/Render/Railway/etc.
 app.use(helmet());
-app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 if (env.NODE_ENV !== 'test') app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
