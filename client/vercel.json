@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://<backend-url>/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
