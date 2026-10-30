@@ -45,8 +45,8 @@ cp server/.env.example server/.env     # then edit (see below)
 cp client/.env.example client/.env
 
 # 3. create the first admin (once)
-npm run seed:admin
 
+npm run seed:admin
 # 4. run both apps
 npm run dev          # API http://localhost:5000, client http://localhost:5173
 ```
