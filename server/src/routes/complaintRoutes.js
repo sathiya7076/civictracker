@@ -1,24 +1,51 @@
 import { Router } from 'express';
-import { create, getOne, getUpdates, listMine, remove, update } from '../controllers/complaintController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authorize } from '../middleware/roleMiddleware.js';
-import { imageUpload } from '../middleware/uploadMiddleware.js';
+import { requireXhrHeader } from '../middleware/csrfMiddleware.js';
 import { validate } from '../middleware/validate.js';
 import { validateObjectId } from '../middleware/validateObjectId.js';
-import { createComplaintSchema, listQuerySchema, updateComplaintSchema } from '../validators/complaintValidators.js';
 import { ROLES } from '../utils/constants.js';
+import {
+  createComplaintSchema,
+  updateComplaintSchema,
+  respondSchema,
+  listQuerySchema,
+} from '../validators/complaintValidators.js';
+import {
+  createComplaint,
+  listComplaints,
+  getComplaintById,
+  updateComplaint,
+  respondToComplaint,
+} from '../controllers/complaintController.js';
 
 const router = Router();
-router.use(protect);
 
-// Order matters: '/my' must be registered before '/:id'.
-router.post('/', authorize(ROLES.CITIZEN), imageUpload('images'), validate(createComplaintSchema), create);
-router.get('/my', authorize(ROLES.CITIZEN), validate(listQuerySchema, 'query'), listMine);
+router.use(protect, requireXhrHeader);
 
-// Access to a single complaint is decided in complaintService.getAccessibleComplaint.
-router.get('/:id', validateObjectId(), getOne);
-router.get('/:id/updates', validateObjectId(), getUpdates);
-router.put('/:id', authorize(ROLES.CITIZEN), validateObjectId(), validate(updateComplaintSchema), update);
-router.delete('/:id', authorize(ROLES.CITIZEN), validateObjectId(), remove);
+// List: citizen sees own complaints, staff/admin sees all (decided in controller)
+router.get('/', validate(listQuerySchema, 'query'), listComplaints);
+
+// Citizen: raise + edit own
+router.post('/', authorize(ROLES.CITIZEN), validate(createComplaintSchema), createComplaint);
+router.patch(
+  '/:id',
+  authorize(ROLES.CITIZEN),
+  validateObjectId('id'),
+  validate(updateComplaintSchema),
+  updateComplaint
+);
+
+// Staff: respond to the citizen
+router.post(
+  '/:id/responses',
+  authorize(ROLES.STAFF, ROLES.ADMIN),
+  validateObjectId('id'),
+  validate(respondSchema),
+  respondToComplaint
+);
+
+// Owner or staff (checked inside controller)
+router.get('/:id', validateObjectId('id'), getComplaintById);
 
 export default router;
