@@ -1,26 +1,21 @@
 import mongoose from 'mongoose';
-import { CATEGORIES, STATUSES } from '../utils/constants.js';
-
-const responseSchema = new mongoose.Schema(
-  {
-    staff: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    message: { type: String, required: true, trim: true, maxlength: 2000 },
-  },
-  { timestamps: { createdAt: true, updatedAt: false } }
-);
+import { CATEGORIES, PRIORITIES, STATUSES } from '../utils/constants.js';
 
 const complaintSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    complaintId: { type: String, required: true, unique: true, trim: true }, // e.g. CT-20261026-K7M2X
     title: { type: String, required: true, trim: true, minlength: 5, maxlength: 120 },
     description: { type: String, required: true, trim: true, minlength: 10, maxlength: 2000 },
     category: { type: String, enum: CATEGORIES, required: true },
     address: { type: String, required: true, trim: true, minlength: 5, maxlength: 300 },
     latitude: { type: Number, min: -90, max: 90 },
     longitude: { type: Number, min: -180, max: 180 },
-    // Default = first value of your STATUSES list (e.g. "pending"/"open").
-    status: { type: String, enum: STATUSES, default: STATUSES[0] },
-    responses: [responseSchema],
+    citizenId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    assignedStaffId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+    priority: { type: String, enum: PRIORITIES, default: 'Medium' },
+    status: { type: String, enum: STATUSES, default: 'Pending' },
+    images: { type: [String], default: [] }, // photos from the citizen
+    resolutionEvidence: { type: [String], default: [] }, // photos uploaded by staff
   },
   { timestamps: true }
 );

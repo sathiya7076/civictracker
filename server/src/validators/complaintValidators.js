@@ -38,9 +38,3 @@ export const listQuerySchema = z.object({
   search: z.preprocess(emptyToUndefined, z.string().trim().max(100).optional()),
   sort: z.enum(['newest', 'oldest']).default('newest'),
 });
-
-// STAFF reply: message is required, status change is optional.
-export const respondSchema = z.object({
-  message: z.string().trim().min(1, 'Response message is required').max(2000, 'Response must be at most 2000 characters'),
-  status: z.preprocess(emptyToUndefined, z.enum(STATUSES).optional()),
-});
