@@ -8,7 +8,8 @@ import { ACCOUNT_STATUS } from '../utils/constants.js';
 
 export const protect = asyncHandler(async (req, _res, next) => {
   const header = req.headers.authorization;
-  const token = req.cookies?.[COOKIE_NAME] || (header?.startsWith('Bearer ') ? header.slice(7) : null);
+  // Header first: a stale cookie must not override a fresh bearer token.
+  const token = (header?.startsWith('Bearer ') ? header.slice(7) : null) || req.cookies?.[COOKIE_NAME];
   if (!token) throw ApiError.unauthorized('Authentication required');
 
   let payload;

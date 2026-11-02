@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { loginRequest, logoutRequest, meRequest, registerRequest } from '../api/auth.js';
+import { setAuthToken } from '../api/axios.js';
 
 const AuthContext = createContext(null);
 
@@ -12,7 +13,10 @@ export function AuthProvider({ children }) {
     let active = true;
     meRequest()
       .then((res) => active && setUser(res.data.data.user))
-      .catch(() => active && setUser(null))
+      .catch(() => {
+        setAuthToken(null); // invalid/expired token: forget it
+        if (active) setUser(null);
+      })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -21,12 +25,14 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const res = await loginRequest(credentials);
+    setAuthToken(res.data.data.token);
     setUser(res.data.data.user);
     return res.data.data.user;
   }, []);
 
   const register = useCallback(async (payload) => {
     const res = await registerRequest(payload);
+    setAuthToken(res.data.data.token);
     setUser(res.data.data.user);
     return res.data.data.user;
   }, []);
@@ -35,6 +41,7 @@ export function AuthProvider({ children }) {
     try {
       await logoutRequest();
     } finally {
+      setAuthToken(null);
       setUser(null);
     }
   }, []);
